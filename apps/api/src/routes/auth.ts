@@ -1,4 +1,4 @@
-import { Router, Request, Response } from 'express';
+import { Router, Request, Response, NextFunction } from 'express';
 import { body } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
@@ -32,7 +32,8 @@ router.post(
     body('location').trim().notEmpty().withMessage('Location is required'),
   ],
   validate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
     const { name, email, password, businessName, category, location, phone, website, bio } = req.body;
 
     const existing = await prisma.user.findUnique({ where: { email } });
@@ -66,6 +67,7 @@ router.post(
       success: true,
       data: { id: user.id, name: user.name, email: user.email, role: user.role },
     });
+    } catch (err) { next(err); }
   }
 );
 
@@ -76,7 +78,8 @@ router.post(
     body('password').notEmpty(),
   ],
   validate,
-  async (req: Request, res: Response): Promise<void> => {
+  async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+    try {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email }, include: { profile: true } });
@@ -122,6 +125,7 @@ router.post(
         },
       },
     });
+    } catch (err) { next(err); }
   }
 );
 

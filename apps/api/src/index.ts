@@ -4,6 +4,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
+import { Request, Response, NextFunction } from 'express';
 import { logger } from './lib/logger';
 
 import authRoutes from './routes/auth';
@@ -43,6 +44,11 @@ app.get('/api/health', (_req, res) => {
 
 app.use((_req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
+});
+
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  logger.error('Unhandled error', { message: err.message });
+  res.status(500).json({ success: false, error: err.message ?? 'Internal server error' });
 });
 
 app.listen(PORT, () => {
