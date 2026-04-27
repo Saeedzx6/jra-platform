@@ -1,0 +1,17 @@
+{
+  "name": "jra-platform",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": ["apps/*", "packages/*"],
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter @jra/api dev\" \"pnpm --filter @jra/web dev\"",
+    "build": "pnpm --filter @jra/api build && pnpm --filter @jra/web build",
+    "db:migrate": "pnpm --filter @jra/db migrate",
+    "db:generate": "pnpm --filter @jra/db generate",
+    "db:seed": "pnpm --filter @jra/db seed",
+    "db:studio": "pnpm --filter @jra/db studio"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

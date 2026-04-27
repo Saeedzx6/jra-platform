@@ -1,0 +1,158 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+  PUBLIC
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+}
+
+enum MemberCategory {
+  FINE_DINING
+  CASUAL_DINING
+  FAST_FOOD
+  CAFE
+  BAKERY
+  CATERING
+  NIGHTLIFE
+  OTHER
+}
+
+enum RegistrationStatus {
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         Role     @default(MEMBER)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  profile       MemberProfile?
+  registrations Registration[]
+  posts         Post[]
+  notifications Notification[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MemberProfile {
+  id             String         @id @default(cuid())
+  userId         String         @unique
+  businessName   String
+  category       MemberCategory
+  stars          Int            @default(0)
+  location       String
+  phone          String?
+  website        String?
+  logoUrl        String?
+  bio            String?
+  status         MemberStatus   @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  date        DateTime
+  location    String
+  imageUrl    String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  registrations Registration[]
+}
+
+model Training {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  description String
+  date        DateTime
+  price       Decimal  @db.Decimal(10, 2)
+  seats       Int
+  imageUrl    String?
+  createdBy   String
+  createdAt   DateTime @default(now())
+
+  registrations Registration[]
+}
+
+model Registration {
+  id           String             @id @default(cuid())
+  userId       String
+  eventId      String?
+  trainingId   String?
+  registeredAt DateTime           @default(now())
+  status       RegistrationStatus @default(CONFIRMED)
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    Event?    @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  training Training? @relation(fields: [trainingId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, eventId])
+  @@unique([userId, trainingId])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  slug      String   @unique
+  content   String
+  excerpt   String?
+  coverUrl  String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+}
+
+model BoardMember {
+  id       String @id @default(cuid())
+  name     String
+  title    String
+  photoUrl String?
+  order    Int    @default(0)
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
