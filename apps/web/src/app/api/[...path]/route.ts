@@ -16,14 +16,31 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
 
   const body = req.method !== 'GET' && req.method !== 'HEAD' ? await req.text() : undefined;
 
-  const res = await fetch(url, { method: req.method, headers, body });
+  try {
+    const res = await fetch(url, { method: req.method, headers, body });
+    const text = await res.text();
 
-  const resHeaders = new Headers();
-  resHeaders.set('content-type', res.headers.get('content-type') ?? 'application/json');
-  const setCookie = res.headers.get('set-cookie');
-  if (setCookie) resHeaders.set('set-cookie', setCookie);
+    const resHeaders = new Headers();
+    const contentType = res.headers.get('content-type') ?? '';
+    resHeaders.set('content-type', 'application/json');
+    const setCookie = res.headers.get('set-cookie');
+    if (setCookie) resHeaders.set('set-cookie', setCookie);
 
-  return new NextResponse(await res.text(), { status: res.status, headers: resHeaders });
+    // If backend returned non-JSON (e.g. HTML error page), return a clean error
+    if (!contentType.includes('application/json')) {
+      return NextResponse.json(
+        { success: false, error: 'Server is starting up, please try again in 30 seconds' },
+        { status: 503 }
+      );
+    }
+
+    return new NextResponse(text, { status: res.status, headers: resHeaders });
+  } catch {
+    return NextResponse.json(
+      { success: false, error: 'Server is starting up, please try again in 30 seconds' },
+      { status: 503 }
+    );
+  }
 }
 
 export const GET = handler;
