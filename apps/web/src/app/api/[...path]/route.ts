@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 
-const BACKEND = (process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api').replace(/\/$/, '');
+export const maxDuration = 60;
+
+const BACKEND = 'https://jra-platform.onrender.com/api';
 
 async function handler(req: NextRequest, { params }: { params: { path: string[] } }) {
   const path = params.path.join('/');
@@ -21,23 +23,24 @@ async function handler(req: NextRequest, { params }: { params: { path: string[] 
     const text = await res.text();
 
     const resHeaders = new Headers();
-    const contentType = res.headers.get('content-type') ?? '';
     resHeaders.set('content-type', 'application/json');
     const setCookie = res.headers.get('set-cookie');
     if (setCookie) resHeaders.set('set-cookie', setCookie);
 
-    // If backend returned non-JSON (e.g. HTML error page), return a clean error
-    if (!contentType.includes('application/json')) {
+    let json: unknown;
+    try {
+      json = JSON.parse(text);
+    } catch {
       return NextResponse.json(
-        { success: false, error: 'Server is starting up, please try again in 30 seconds' },
+        { success: false, error: 'Server is waking up, please wait 30 seconds and try again' },
         { status: 503 }
       );
     }
 
-    return new NextResponse(text, { status: res.status, headers: resHeaders });
-  } catch {
+    return NextResponse.json(json, { status: res.status, headers: resHeaders });
+  } catch (err) {
     return NextResponse.json(
-      { success: false, error: 'Server is starting up, please try again in 30 seconds' },
+      { success: false, error: 'Could not reach server, please try again' },
       { status: 503 }
     );
   }
