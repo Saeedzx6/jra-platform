@@ -1,18 +1,53 @@
 # JRA Platform — Jordan Restaurants Association
 
-A full-stack web platform for JRA built with Next.js 14, Express, PostgreSQL, and Prisma.
+A full-stack web platform for the Jordan Restaurants Association, built with Next.js 14, Express, PostgreSQL, and Prisma.
+
+**Live site:** https://jra-platform-web-psi.vercel.app/en
 
 ---
 
-## Prerequisites
+## Security Notice
+
+This is a **public repository**. Never commit real passwords, API keys, or secrets to this repo.
+
+All secrets are managed via environment variables:
+- **Render** — stores `DATABASE_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`
+- **Vercel** — stores `NEXT_PUBLIC_API_URL`
+
+After deploying, **change the default admin password** immediately by logging into the admin panel.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, Tailwind CSS, Radix UI |
+| Backend | Express.js, TypeScript |
+| Database | PostgreSQL (Supabase) + Prisma ORM |
+| Auth | JWT (access + refresh tokens) |
+| i18n | next-intl (English + Arabic) |
+
+---
+
+## Live Deployment
+
+| Service | URL |
+|---------|-----|
+| Website | https://jra-platform-web-psi.vercel.app/en |
+| API | https://jra-platform.onrender.com/api/health |
+
+> **Note:** The API is hosted on Render's free tier and sleeps after 15 minutes of inactivity. The first request after a period of no traffic may take 30–60 seconds to respond.
+
+---
+
+## Local Development
+
+### Prerequisites
 
 - Node.js 18+
 - pnpm (`npm install -g pnpm`)
 - PostgreSQL 15+ running locally
-
----
-
-## Setup
 
 ### 1. Install dependencies
 
@@ -22,12 +57,7 @@ pnpm install
 
 ### 2. Configure environment variables
 
-**Backend** — copy and fill in:
-```bash
-cp apps/api/.env.example apps/api/.env
-```
-
-Edit `apps/api/.env`:
+**Backend** (`apps/api/.env`):
 ```
 DATABASE_URL=postgresql://postgres:yourpassword@localhost:5432/jra_db
 JWT_ACCESS_SECRET=replace_with_long_random_string
@@ -37,50 +67,34 @@ FRONTEND_URL=http://localhost:3000
 NODE_ENV=development
 ```
 
-**Frontend** — copy and fill in:
-```bash
-cp apps/web/.env.local.example apps/web/.env.local
-```
-
-`apps/web/.env.local` (default is fine for local dev):
+**Frontend** (`apps/web/.env.local`):
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000/api
 ```
 
 ### 3. Set up the database
 
-First create the database in PostgreSQL:
-```sql
-CREATE DATABASE jra_db;
-```
-
-Then run migrations:
 ```bash
+# Create the database in PostgreSQL
+createdb jra_db
+
+# Run migrations
 pnpm db:generate
 pnpm db:migrate
-```
 
-### 4. Seed the database
-
-```bash
+# Seed with sample data
 pnpm db:seed
 ```
 
-This creates:
-- Admin: `admin@jra.jo` / `Admin@1234`
-- 5 member restaurants (password: `Member@1234` each)
-- 2 events, 2 training programs, 3 blog posts
-- 3 board members
-
-### 5. Start the development servers
+### 4. Start development servers
 
 ```bash
 pnpm dev
 ```
 
-- Frontend: http://localhost:3000
+- Frontend: http://localhost:3000/en
 - Backend API: http://localhost:4000/api
-- API Health: http://localhost:4000/api/health
+- Health check: http://localhost:4000/api/health
 
 ---
 
@@ -91,7 +105,7 @@ jra-platform/
 ├── apps/
 │   ├── web/               # Next.js 14 frontend
 │   │   └── src/
-│   │       ├── app/[locale]/   # All pages (en/ar)
+│   │       ├── app/[locale]/   # Pages (en/ar)
 │   │       ├── components/     # UI components
 │   │       ├── context/        # Auth context
 │   │       ├── lib/            # API client, utils
@@ -110,7 +124,7 @@ jra-platform/
 
 ---
 
-## Key URLs
+## Key Routes
 
 | Route | Description |
 |-------|-------------|
@@ -118,11 +132,9 @@ jra-platform/
 | `/en/members` | Member directory |
 | `/en/events` | Events listing |
 | `/en/trainings` | Training programs |
-| `/en/news` | Blog/News |
+| `/en/news` | Blog / News |
 | `/en/about` | About JRA |
-| `/en/contact` | Contact page |
 | `/en/login` | Sign in |
-| `/en/register` | Join JRA |
 | `/en/dashboard` | Member dashboard |
 | `/en/admin` | Admin panel |
 | `/ar/*` | Arabic versions of all pages |
@@ -130,8 +142,6 @@ jra-platform/
 ---
 
 ## API Endpoints
-
-All API responses follow: `{ success: boolean, data: T, error?: string }`
 
 | Method | Path | Auth |
 |--------|------|------|
@@ -153,7 +163,9 @@ All API responses follow: `{ success: boolean, data: T, error?: string }`
 
 ---
 
-## Default Credentials
+## Default Seed Credentials
+
+> ⚠️ **Change these immediately after deploying to production.**
 
 | Role | Email | Password |
 |------|-------|----------|
