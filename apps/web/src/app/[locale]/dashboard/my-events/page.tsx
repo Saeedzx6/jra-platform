@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute';
 import { api } from '@/lib/api';
-import { Registration } from '@/types';
 import { Calendar, MapPin, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
